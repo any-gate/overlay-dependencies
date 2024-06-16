@@ -1,0 +1,14 @@
+{
+  "name": "overlay-dependencies",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "dev:tools": "pm2 start tools.ecosystem.config.js",
+    "build:tools": "pnpm --filter './tools/**' build",
+    "build:deps": "pnpm --filter './dependencies' build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
