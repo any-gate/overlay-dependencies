@@ -1,8 +1,7 @@
-import fs, { readFileSync, statSync, writeFileSync } from 'fs';
+import fs, { readFileSync, writeFileSync } from 'fs';
 import path, { resolve } from 'path';
 import YAML from 'yaml';
 
-// const SystemJSPublicPathWebpackPlugin = require('systemjs-webpack-interop/SystemJSPublicPathWebpackPlugin');
 import webpack from 'webpack';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
@@ -14,7 +13,6 @@ import {
   OUTPUT_CSS_FILE_NAME,
   BUNDLE_MANIFEST_NAME,
 } from './constants';
-import { exec, execSync, spawnSync } from 'child_process';
 
 const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
@@ -37,21 +35,16 @@ interface ManifestBundleModel {
   libs?: Record<string, string>;
 }
 
-const readDirYml = (filePath: string) => {
+export const readDirYml = (filePath: string) => {
   const content = readFileSync(resolve(filePath), {
     encoding: 'utf8',
   });
   return YAML.parse(content);
 };
 
-// const formatManifest = (folder: string): ManifestModel => {
-//   const content = readFileSync(resolve(folder, MANIFEST_FILE_NAME), {
-//     encoding: 'utf8',
-//   });
-//   const manifest = YAML.parse(content);
-
-//   return manifest;
-// };
+export const readLibMinifest = (folder: string) => {
+  return readDirYml(resolve(folder, MANIFEST_FILE_NAME));
+};
 
 const getOutputFolder = (name: string, version) => {
   return resolve(BUNDLE_DIR, name, version);
@@ -84,7 +77,7 @@ const extractExternals = ({ libs }: ManifestModel): Record<string, string> => {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const formatWebpackConfig = ({ folder }: OptionsModel) => {
-  const manifest = readDirYml(path.join(folder, MANIFEST_FILE_NAME));
+  const manifest = readLibMinifest(folder);
 
   const plugins = [
     new MiniCssExtractPlugin({
@@ -178,10 +171,7 @@ export function build(options: OptionsModel): Promise<string> {
       // if (stats.hasWarnings()) {
       //   console.warn(info.warnings);
       // }
-      // const manifest = getBundleManifest(formatManifest(options.folder));
-      const manifest = readDirYml(
-        path.join(options.folder, MANIFEST_FILE_NAME)
-      );
+      const manifest = getBundleManifest(readLibMinifest(options.folder));
       // 导出 library.manifest 文件
       writeFileSync(
         path.resolve(
@@ -205,48 +195,4 @@ interface TaskModel {
   name: string;
   version: string;
   folder: string;
-}
-
-async function execBuildTask(task: TaskModel, tasks: TaskModel[]) {
-  const manifest: ManifestModel = readDirYml(
-    path.join(task.folder, MANIFEST_FILE_NAME)
-  );
-  let libsAddCmd = `pnpm add ${task.name}@${task.version} `;
-
-  // 判断是否存在子依赖
-  if (manifest.libs) {
-    libsAddCmd += Object.entries(manifest.libs)
-      .map(([libName, version]) => {
-        return `${libName}@${version}`;
-      })
-      .join(' ');
-  }
-
-  console.log(libsAddCmd);
-  // console.log(execSync('ls', { cwd: path.resolve(), encoding: 'utf-8' }));
-  execSync(libsAddCmd, { cwd: path.resolve(), encoding: 'utf-8' });
-  // spawnSync(libsAddCmd, [''], { cwd: path.resolve(), encoding: 'utf-8' });
-  // execSync(`pack build --folder ${task.folder}`);
-
-  if (tasks.length) {
-    execBuildTask(tasks.shift() as TaskModel, tasks);
-    return;
-  }
-  console.log('Build all completed!');
-}
-
-export function buildAll(options: OptionsModel): Promise<string> {
-  const libraryMap = readDirYml('library-map.yml');
-
-  const { dependencies } = libraryMap;
-
-  dependencies.forEach(dep => {
-    Object.assign(dep, {
-      folder: path.join(options.folder, dep.name, dep.version),
-    });
-  });
-
-  execBuildTask(dependencies.shift(), dependencies);
-
-  return new Promise((resolve, reject) => {});
 }
