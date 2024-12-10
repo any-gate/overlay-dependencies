@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { program } from 'commander';
-import { build, buildAll } from './utils';
+import { build } from './utils';
 
 const pkg = JSON.parse(
   fs.readFileSync(path.join(__dirname, '../package.json'), { encoding: 'utf8' })
@@ -13,14 +13,8 @@ program
   .command('build')
   .description('Build library for systemjs.')
   .option('--folder <folder>', 'Library files folder.')
-  .option('--all', 'Build all dependencies.')
   .action((args) => {
     process.env.NODE_ENV = 'production';
-
-    if (args.all) {
-      buildAll(args);
-      return;
-    }
     build(args);
   });
 
