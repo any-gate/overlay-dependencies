@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "outDir": "lib",
+    "strict": true,
+    "allowJs": true,
+    "strictNullChecks": true,
+    "noImplicitThis": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "strictPropertyInitialization": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "Node",
+    "baseUrl": "./src",
+    "rootDir": "./src",
+    "newLine": "lf",
+    "declaration": true,
+    "declarationDir": "lib",
+    "types": ["node"]
+  },
+  "exclude": ["./node_modules"],
+  "include": ["src/**/*",],
+}
