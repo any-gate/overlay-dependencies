@@ -1,0 +1,7 @@
+name: 'antd'
+version: 5.15.1
+schema_version: 1.0.0
+# 但对于构建目标库所包含的外部依赖, 需要额外进行构建
+libs:
+  'react': 18.2.0
+  'react-dom': 18.2.0

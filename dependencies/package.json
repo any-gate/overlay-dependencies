@@ -4,8 +4,9 @@
   "description": "",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "build:only": "pack build",
-    "build:all": "node scripts/pack-all.js"
+    "build:webpack": "pack build",
+    "build:webpack:all": "node scripts/pack-all.js",
+    "build:rollup": "rollup-pack build"
   },
   "keywords": [],
   "author": "",
@@ -16,10 +17,7 @@
   },
   "devDependencies": {
     "@overlay-dependencies/lib-builder": "workspace:^",
+    "@overlay-dependencies/library-rollup-pack": "workspace:^",
     "@types/node": "20.11.24"
-  },
-  "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
   }
 }
