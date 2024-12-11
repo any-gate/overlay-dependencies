@@ -1,9 +1,0 @@
-dependencies:
-  [
-    { name: react, version: 16.14.0 },
-    { name: react-dom, version: 16.14.0 },
-    { name: react, version: 18.2.0 },
-    { name: react-dom, version: 18.2.0 },
-    { name: antd, version: 4.24.15 },
-    { name: antd, version: 5.15.1 },
-  ]

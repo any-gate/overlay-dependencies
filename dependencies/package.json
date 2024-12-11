@@ -4,8 +4,7 @@
   "description": "",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "build:webpack": "pack build",
-    "build:webpack:all": "node scripts/pack-all.js",
+    "build:pack": "pack build",
     "build:rollup": "rollup-pack build"
   },
   "keywords": [],
@@ -19,5 +18,8 @@
     "@overlay-dependencies/lib-builder": "workspace:^",
     "@overlay-dependencies/library-rollup-pack": "workspace:^",
     "@types/node": "20.11.24"
+  },
+  "dependencies": {
+    "react-dom": "16.14.0"
   }
 }

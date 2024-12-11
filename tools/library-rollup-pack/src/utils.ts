@@ -1,18 +1,15 @@
-import fs, { readFileSync, writeFileSync } from 'fs';
+import fs from 'fs';
 import YAML from 'yaml';
 
 import {
   MANIFEST_FILE_NAME,
-  ENTRY_FILE_NAME,
   BUNDLE_DIR,
-  OUTPUT_FILE_NAME,
   OUTPUT_CSS_FILE_NAME,
-  BUNDLE_MANIFEST_NAME,
   SOURCE_DIR,
 } from './constants.js';
 
-import kleur from 'kleur';
 import path from 'path';
+import { spawn } from 'node:child_process';
 
 export interface ManifestModel {
   name: string;
@@ -133,3 +130,24 @@ export const getExternals = ({
     });
   return externals;
 };
+
+export async function updateDependencies(libraries: string[]): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('pnpm', [...libraries], {
+      stdio: 'inherit',
+      cwd: path.resolve(),
+      env: {
+        ...process.env,
+        NODE_ENV: 'development',
+      },
+    });
+
+    child.on('close', code => {
+      if (code !== 0) {
+        reject();
+        return;
+      }
+      resolve();
+    });
+  });
+}

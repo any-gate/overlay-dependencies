@@ -3,7 +3,7 @@ import { program } from 'commander';
 import { getAllLibrary, getLibrarySelection } from './utils.js';
 
 import inquirer from 'inquirer';
-import { batchExecTask } from './pack.js';
+import { build } from './pack.js';
 import kleur from 'kleur';
 
 program
@@ -31,16 +31,13 @@ program
         process.exit(1);
       }
     }
-    const libraryMap = getAllLibrary().filter(({ folder }) =>
-      libraries.includes(folder)
-    );
 
-    if (libraryMap.length === 0) {
+    if (libraries.length === 0) {
       kleur.yellow('Please select library!');
       process.exit(1);
     }
 
-    batchExecTask(libraryMap);
+    build({ folders: libraries });
   });
 
 program

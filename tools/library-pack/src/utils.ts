@@ -1,70 +1,126 @@
-import fs, { readFileSync, writeFileSync } from 'fs';
-import path, { resolve } from 'path';
+import fs from 'fs';
 import YAML from 'yaml';
 
-import webpack from 'webpack';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import {
   MANIFEST_FILE_NAME,
-  ENTRY_FILE_NAME,
   BUNDLE_DIR,
-  OUTPUT_FILE_NAME,
   OUTPUT_CSS_FILE_NAME,
-  BUNDLE_MANIFEST_NAME,
-} from './constants';
+  SOURCE_DIR,
+} from './constants.js';
 
-const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
-const CompressionPlugin = require('compression-webpack-plugin');
+import path from 'path';
+import { spawn } from 'node:child_process';
 
-interface OptionsModel {
-  folder: string;
-}
-
-interface ManifestModel {
+export interface ManifestModel {
   name: string;
   version: string;
   schema_version: string;
   libs?: Record<string, string>;
 }
 
-interface ManifestBundleModel {
-  name: string;
-  version: string;
+export interface ManifestBundleModel extends ManifestModel {
   hasCss: boolean;
-  libs?: Record<string, string>;
 }
 
-export const readDirYml = (filePath: string) => {
-  const content = readFileSync(resolve(filePath), {
+export const readDirYml = filePath => {
+  const content = fs.readFileSync(filePath, {
     encoding: 'utf8',
   });
   return YAML.parse(content);
 };
 
-export const readLibMinifest = (folder: string) => {
-  return readDirYml(resolve(folder, MANIFEST_FILE_NAME));
+function isLibrary(dir: string) {
+  return fs.existsSync(path.join(dir, MANIFEST_FILE_NAME));
+}
+
+function getDirectories(dir: string) {
+  const entries = fs.readdirSync(dir);
+
+  const directories = entries.filter(entry => {
+    const entryPath = path.join(dir, entry);
+    return fs.statSync(entryPath).isDirectory();
+  });
+  return directories;
+}
+
+export function getLibrarySelection() {
+  const dir = path.resolve(SOURCE_DIR);
+  const selection: { name: string; value: string; disabled?: boolean }[] = [];
+
+  getDirectories(dir).forEach(name => {
+    selection.push(
+      {
+        name,
+        value: name,
+        disabled: true,
+      },
+      ...getDirectories(path.join(dir, name))
+        .filter(version => isLibrary(path.join(dir, name, version)))
+        .map(version => ({
+          name: version,
+          value: path.join(dir, name, version),
+        }))
+    );
+  });
+
+  return selection;
+}
+
+function getLibraryList(dir: string): {
+  folder: string;
+  manifest: ManifestModel;
+}[] {
+  return getDirectories(dir)
+    .filter(version => isLibrary(path.join(dir, version)))
+    .map(version => {
+      const folder = path.join(dir, version);
+
+      return {
+        folder,
+        manifest: readDirYml(path.join(folder, MANIFEST_FILE_NAME)),
+      };
+    });
+}
+
+export const getAllLibrary = (): {
+  folder: string;
+  manifest: ManifestModel;
+}[] => {
+  const dir = path.resolve(SOURCE_DIR);
+  const libraryNames = getDirectories(dir);
+  const libraries: { folder: string; manifest: ManifestModel }[] = [];
+
+  libraryNames.forEach(name => {
+    libraries.push(...getLibraryList(path.join(dir, name)));
+  });
+
+  return libraries;
 };
 
-const getOutputFolder = (name: string, version) => {
-  return resolve(BUNDLE_DIR, name, version);
+export const getOutputFolder = (name: string, version) => {
+  return path.resolve(BUNDLE_DIR, name, version);
 };
 
-const getBundleManifest = (manifest: ManifestModel): ManifestBundleModel => {
+export const getBundleManifest = ({
+  name,
+  version,
+  schema_version,
+  libs,
+}: ManifestModel): ManifestBundleModel => {
   return {
-    name: manifest.name,
-    version: manifest.version,
+    name,
+    version,
+    schema_version,
     hasCss: fs.existsSync(
-      resolve(
-        getOutputFolder(manifest.name, manifest.version),
-        OUTPUT_CSS_FILE_NAME
-      )
+      path.resolve(getOutputFolder(name, version), OUTPUT_CSS_FILE_NAME)
     ),
-    libs: manifest.libs,
+    libs,
   };
 };
 
-const extractExternals = ({ libs }: ManifestModel): Record<string, string> => {
+export const getExternals = ({
+  libs,
+}: ManifestModel): Record<string, string> => {
   const externals: Record<string, string> = {};
   libs &&
     Object.entries(libs).forEach(([name, version]) => {
@@ -75,124 +131,23 @@ const extractExternals = ({ libs }: ManifestModel): Record<string, string> => {
   return externals;
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const formatWebpackConfig = ({ folder }: OptionsModel) => {
-  const manifest = readLibMinifest(folder);
-
-  const plugins = [
-    new MiniCssExtractPlugin({
-      filename: OUTPUT_CSS_FILE_NAME,
-    }),
-    new CssMinimizerPlugin(),
-    new SimpleProgressWebpackPlugin(),
-    new CompressionPlugin({
-      threshold: 12800, // 对大于 128kb 的文件进行压缩
-    }),
-  ];
-  return {
-    entry: resolve(folder, ENTRY_FILE_NAME),
-    output: {
-      filename: OUTPUT_FILE_NAME,
-      path: getOutputFolder(manifest.name, manifest.version),
-      libraryTarget: 'system',
-      clean: true,
-    },
-    optimization: {
-      minimize: true,
-    },
-    plugins,
-    performance: {
-      maxEntrypointSize: 2000000,
-      maxAssetSize: 2000000,
-    },
-    resolve: {
-      extensions: ['.ts', '.js'],
-    },
-    externals: extractExternals(manifest),
-    module: {
-      rules: [
-        {
-          test: /\.(js|mjs)$/,
-          loader: require.resolve('babel-loader'),
-          options: {
-            cacheDirectory: true,
-            cacheCompression: false,
-            compact: false,
-          },
-        },
-        {
-          test: /\.ts?$/,
-          use: [require.resolve('babel-loader'), require.resolve('ts-loader')],
-          parser: {
-            system: false,
-          },
-        },
-        {
-          test: /\.(css)$/,
-          // sideEffects: true,
-          use: [
-            MiniCssExtractPlugin.loader,
-            {
-              loader: require.resolve('css-loader'),
-            },
-            {
-              loader: require.resolve('postcss-loader'),
-              options: {
-                postcssOptions: {
-                  plugins: ['postcss-preset-env'],
-                },
-              },
-            },
-          ],
-        },
-      ],
-    },
-  };
-};
-
-export function build(options: OptionsModel): Promise<string> {
+export async function updateDependencies(libraries: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const webpackConfig = formatWebpackConfig(options);
+    const child = spawn('pnpm', [...libraries, '-P'], {
+      stdio: 'inherit',
+      cwd: path.resolve(),
+      env: {
+        ...process.env,
+        NODE_ENV: 'development',
+      },
+    });
 
-    const compiler = webpack(webpackConfig);
-
-    compiler.run((error: any, stats: any) => {
-      if (error) {
-        // let errMessage = error.message;
-        reject(error);
+    child.on('close', code => {
+      if (code !== 0) {
+        reject();
         return;
       }
-      const info = stats.toJson();
-      if (stats?.hasErrors()) {
-        console.error(info.errors);
-        reject(stats?.toString({ all: false, warnings: false, errors: true }));
-        return;
-      }
-      // if (stats.hasWarnings()) {
-      //   console.warn(info.warnings);
-      // }
-      const manifest = getBundleManifest(readLibMinifest(options.folder));
-      // 导出 library.manifest 文件
-      writeFileSync(
-        path.resolve(
-          getOutputFolder(manifest.name, manifest.version),
-          BUNDLE_MANIFEST_NAME
-        ),
-        JSON.stringify(manifest, null, 2),
-        { encoding: 'utf8' }
-      );
-
-      compiler.close(_closeErr => {
-        // console.error(JSON.stringify(closeErr));
-      });
-
-      resolve('complete');
+      resolve();
     });
   });
-}
-
-interface TaskModel {
-  name: string;
-  version: string;
-  folder: string;
 }

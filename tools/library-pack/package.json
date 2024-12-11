@@ -2,9 +2,7 @@
   "name": "@overlay-dependencies/lib-builder",
   "version": "0.1.0",
   "description": "",
-  "main": "lib/index.js",
-  "module": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "type": "commonjs",
   "bin": {
     "pack": "./lib/bin.js"
   },
@@ -31,14 +29,17 @@
     "compression-webpack-plugin": "^11.1.0",
     "css-loader": "^6.10.0",
     "css-minimizer-webpack-plugin": "^6.0.0",
+    "inquirer": "^12.2.0",
+    "kleur": "^4.1.5",
     "mini-css-extract-plugin": "^2.8.1",
     "postcss-loader": "^8.1.1",
     "postcss-preset-env": "^9.5.0",
-    "simple-progress-webpack-plugin": "^2.0.0",
+    "source-map-loader": "^5.0.0",
     "ts-loader": "^9.5.1",
     "typescript": "5.3.3",
     "webpack": "^5.90.3",
     "webpack-merge": "^5.10.0",
+    "webpackbar": "^7.0.0",
     "yaml": "^2.4.0"
   },
   "devDependencies": {

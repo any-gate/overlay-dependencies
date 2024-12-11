@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 import path from 'path';
 
-import {
-  ENTRY_FILE_NAME,
-  OUTPUT_FILE_NAME,
-  OUTPUT_CSS_FILE_NAME,
-} from './constants.js';
+import { ENTRY_FILE_NAME, OUTPUT_FILE_NAME } from './constants.js';
 
 import { babel } from '@rollup/plugin-babel';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
@@ -13,11 +9,16 @@ import typescript from '@rollup/plugin-typescript';
 import replace from '@rollup/plugin-replace';
 import commonjs from '@rollup/plugin-commonjs';
 
-import child_process from 'node:child_process';
 import kleur from 'kleur';
 import { InputOptions, OutputOptions, rollup } from 'rollup';
 import cleaner from 'rollup-plugin-cleaner';
-import { getExternals, getOutputFolder, ManifestModel } from './utils.js';
+import {
+  getAllLibrary,
+  getExternals,
+  getOutputFolder,
+  ManifestModel,
+  updateDependencies,
+} from './utils.js';
 import ora from 'ora';
 
 const extensions = ['.js', '.ts', '.json', '.tsx', '.jsx'];
@@ -27,6 +28,7 @@ const getInputOptions = (
   manifest: ManifestModel
 ): InputOptions => {
   const external = Object.keys(manifest.libs || {});
+  console.log(external);
   const res = {
     cache: false,
     input: path.join(folder, ENTRY_FILE_NAME),
@@ -84,34 +86,19 @@ function formatOutputFileLog(files: readonly string[]) {
     .join('\n');
 }
 
-async function updateDependencies(libraries: string[]): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const child = child_process.spawn('pnpm', [...libraries], {
-      stdio: 'inherit',
-      cwd: path.resolve(),
-      env: {
-        ...process.env,
-        NODE_ENV: 'development',
-      },
-    });
 
-    child.on('close', code => {
-      if (code !== 0) {
-        reject();
-        return;
-      }
-      resolve();
-    });
-  });
-}
 
-async function execTask({
-  folder,
-  manifest,
-}: {
-  folder: string;
-  manifest: ManifestModel;
-}) {
+async function execTasks(
+  tasks: {
+    folder: string;
+    manifest: ManifestModel;
+  }[]
+) {
+  const task = tasks.shift();
+  if (!task) process.exit(0);
+
+  const { folder, manifest } = task;
+
   const libraries = [{ name: manifest.name, version: manifest.version }];
 
   // 判断是否存在子依赖
@@ -155,20 +142,14 @@ async function execTask({
   if (bundle) {
     await bundle.close();
   }
+
+  execTasks(tasks);
 }
 
-export async function batchExecTask(
-  packLibraries: {
-    folder: string;
-    manifest: ManifestModel;
-  }[]
-) {
-  const task = packLibraries.shift();
+export async function build({ folders }: { folders: string[] }) {
+  const packLibraries = getAllLibrary().filter(({ folder }) =>
+    folders.includes(folder)
+  );
 
-  if (task) {
-    await execTask(task);
-    batchExecTask(packLibraries);
-  } else {
-    process.exit(0);
-  }
+  await execTasks(packLibraries);
 }

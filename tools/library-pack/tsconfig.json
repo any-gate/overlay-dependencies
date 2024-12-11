@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "CommonJS",
     "outDir": "lib",
     "strict": true,
     "allowJs": true,
@@ -17,10 +17,12 @@
     "experimentalDecorators": true,
     "moduleResolution": "Node",
     "baseUrl": "./src",
+    "rootDir": "./src",
     "newLine": "lf",
     "declaration": true,
-    "declarationDir": "lib"
+    "declarationDir": "lib",
+    "types": ["node"]
   },
   "exclude": ["./node_modules"],
-  "include": ["src"]
+  "include": ["src/**/*",],
 }

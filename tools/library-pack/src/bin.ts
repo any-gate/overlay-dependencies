@@ -1,21 +1,54 @@
-import fs from 'fs';
-import path from 'path';
+#!/usr/bin/env node
 import { program } from 'commander';
-import { build } from './utils';
+import { getAllLibrary, getLibrarySelection } from './utils.js';
 
-const pkg = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../package.json'), { encoding: 'utf8' })
-);
-
-program.name('Library Builder').description(pkg.name).version(pkg.version);
+import inquirer from 'inquirer';
+import { build } from './pack.js';
+import kleur from 'kleur';
 
 program
   .command('build')
   .description('Build library for systemjs.')
-  .option('--folder <folder>', 'Library files folder.')
-  .action((args) => {
+  .action(async () => {
     process.env.NODE_ENV = 'production';
-    build(args);
+    const choices = getLibrarySelection();
+    let libraries: string[] = [];
+
+    try {
+      const res = await inquirer.prompt({
+        type: 'checkbox',
+        message: 'Select library need pack',
+        name: 'libraries',
+        choices,
+      });
+      libraries = res.libraries;
+    } catch (error: any) {
+      if (error.name === 'ExitPromptError') {
+        console.log('\nPrompt closed by user.');
+        process.exit(0);
+      } else {
+        console.error('Unexpected error:', error);
+        process.exit(1);
+      }
+    }
+
+    if (libraries.length === 0) {
+      kleur.yellow('Please select library!');
+      process.exit(1);
+    }
+
+    try {
+      build({ folders: libraries });
+    } catch (error) {
+      console.log(
+        kleur.red(
+          error instanceof Error
+            ? error.message
+            : JSON.stringify(error, null, 2)
+        )
+      );
+      process.exit(1);
+    }
   });
 
 program
