@@ -5,7 +5,8 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "build:pack": "pack build",
-    "build:rollup": "rollup-pack build"
+    "build:rollup": "rollup-pack build",
+    "serve": "http-server ./dist -p 8080"
   },
   "keywords": [],
   "author": "",
@@ -17,9 +18,7 @@
   "devDependencies": {
     "@overlay-dependencies/lib-builder": "workspace:^",
     "@overlay-dependencies/library-rollup-pack": "workspace:^",
-    "@types/node": "20.11.24"
-  },
-  "dependencies": {
-    "react-dom": "16.14.0"
+    "@types/node": "20.11.24",
+    "http-server": "^14.1.1"
   }
 }

@@ -135,13 +135,11 @@ async function execTask(task: {
 
     compiler.run((error: any, stats: any) => {
       if (error) {
-        console.log('错误 1');
         reject(new Error(error.message));
         return;
       }
       const info = stats.toJson();
       if (stats?.hasErrors()) {
-        console.log('错误 2');
         reject(info.errors);
         return;
       }
@@ -180,6 +178,12 @@ async function execTasks(
 
   const { manifest } = task;
   const libraries = [{ name: manifest.name, version: manifest.version }];
+
+  if (manifest.libs) {
+    Object.entries(manifest.libs).forEach(([name, version]) => {
+      libraries.push({ name, version });
+    });
+  }
 
   await updateDependencies([
     'add',
