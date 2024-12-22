@@ -6,10 +6,12 @@ import {
   BUNDLE_DIR,
   OUTPUT_CSS_FILE_NAME,
   SOURCE_DIR,
+  BUNDLE_MANIFEST_NAME,
 } from './constants.js';
 
 import path from 'path';
 import { spawn } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
 
 export interface ManifestModel {
   name: string;
@@ -101,12 +103,20 @@ export const getOutputFolder = (name: string, version) => {
   return path.resolve(BUNDLE_DIR, name, version);
 };
 
-export const getBundleManifest = ({
+const getBundleManifest = ({
   name,
   version,
   schema_version,
   libs,
 }: ManifestModel): ManifestBundleModel => {
+  console.log(
+    path.resolve(getOutputFolder(name, version), OUTPUT_CSS_FILE_NAME)
+  );
+  console.log(
+    fs.existsSync(
+      path.resolve(getOutputFolder(name, version), OUTPUT_CSS_FILE_NAME)
+    )
+  );
   return {
     name,
     version,
@@ -116,6 +126,17 @@ export const getBundleManifest = ({
     ),
     libs,
   };
+};
+
+export const writeBundleManifest = (manifest: ManifestModel) => {
+  writeFileSync(
+    path.resolve(
+      getOutputFolder(manifest.name, manifest.version),
+      BUNDLE_MANIFEST_NAME
+    ),
+    JSON.stringify(getBundleManifest(manifest), null, 2),
+    { encoding: 'utf8' }
+  );
 };
 
 export const getExternals = ({

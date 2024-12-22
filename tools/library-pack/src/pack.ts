@@ -19,6 +19,7 @@ import {
   ManifestModel,
   readDirYml,
   updateDependencies,
+  writeBundleManifest,
 } from './utils.js';
 import kleur from 'kleur';
 
@@ -147,14 +148,7 @@ async function execTask(task: {
       //   console.warn(info.warnings);
       // }
       // 导出 library.manifest 文件
-      writeFileSync(
-        path.resolve(
-          getOutputFolder(manifest.name, manifest.version),
-          BUNDLE_MANIFEST_NAME
-        ),
-        JSON.stringify(manifest, null, 2),
-        { encoding: 'utf8' }
-      );
+      writeBundleManifest(manifest);
 
       compiler.close(closeErr => {
         if (closeErr) {
