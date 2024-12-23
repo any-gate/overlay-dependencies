@@ -147,7 +147,7 @@ async function execTask(task: {
       // if (stats.hasWarnings()) {
       //   console.warn(info.warnings);
       // }
-      // 导出 library.manifest 文件
+      // 导出 dep.manifest.yml 文件
       writeBundleManifest(manifest);
 
       compiler.close(closeErr => {
@@ -173,8 +173,8 @@ async function execTasks(
   const { manifest } = task;
   const libraries = [{ name: manifest.name, version: manifest.version }];
 
-  if (manifest.libs) {
-    Object.entries(manifest.libs).forEach(([name, version]) => {
+  if (manifest.dependences) {
+    Object.entries(manifest.dependences).forEach(([name, version]) => {
       libraries.push({ name, version });
     });
   }

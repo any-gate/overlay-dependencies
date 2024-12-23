@@ -17,7 +17,7 @@ export interface ManifestModel {
   name: string;
   version: string;
   schema_version: string;
-  libs?: Record<string, string>;
+  dependences?: Record<string, string>;
 }
 
 export interface ManifestBundleModel extends ManifestModel {
@@ -107,16 +107,8 @@ const getBundleManifest = ({
   name,
   version,
   schema_version,
-  libs,
+  dependences,
 }: ManifestModel): ManifestBundleModel => {
-  console.log(
-    path.resolve(getOutputFolder(name, version), OUTPUT_CSS_FILE_NAME)
-  );
-  console.log(
-    fs.existsSync(
-      path.resolve(getOutputFolder(name, version), OUTPUT_CSS_FILE_NAME)
-    )
-  );
   return {
     name,
     version,
@@ -124,7 +116,7 @@ const getBundleManifest = ({
     hasCss: fs.existsSync(
       path.resolve(getOutputFolder(name, version), OUTPUT_CSS_FILE_NAME)
     ),
-    libs,
+    dependences,
   };
 };
 
@@ -140,11 +132,11 @@ export const writeBundleManifest = (manifest: ManifestModel) => {
 };
 
 export const getExternals = ({
-  libs,
+  dependences,
 }: ManifestModel): Record<string, string> => {
   const externals: Record<string, string> = {};
-  libs &&
-    Object.entries(libs).forEach(([name, version]) => {
+  dependences &&
+    Object.entries(dependences).forEach(([name, version]) => {
       Object.assign(externals, {
         [name]: `${name}@${version}`,
       });
