@@ -43,13 +43,21 @@ export const formatWebpackConfig = ({
     }),
     new CssMinimizerPlugin(),
     new WebpackBar({
-      /* options */
+      color: '#9ff552',
     }),
     new CompressionPlugin({
       threshold: 12800, // 对大于 128kb 的文件进行压缩
     }),
   ];
   return {
+    stats: {
+      all: false,
+      errors: true,
+      warnings: false,
+      modules: false,
+      assets: true,
+    },
+    mode: 'production' as 'production',
     devtool: 'source-map',
     entry: resolve(folder, ENTRY_FILE_NAME),
     output: {
