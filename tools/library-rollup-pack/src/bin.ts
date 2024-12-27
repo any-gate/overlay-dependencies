@@ -37,18 +37,7 @@ program
       process.exit(1);
     }
 
-    try {
-      build({ folders: libraries });
-    } catch (error) {
-      console.log(
-        kleur.red(
-          error instanceof Error
-            ? error.message
-            : JSON.stringify(error, null, 2)
-        )
-      );
-      process.exit(1);
-    }
+    build({ folders: libraries });
   });
 
 program

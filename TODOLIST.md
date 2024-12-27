@@ -1,0 +1,2 @@
+- rollup 构建 systemjs 不支持 external 另外命名
+- rollup 构建 systemjs sourcemap 无法正确查找

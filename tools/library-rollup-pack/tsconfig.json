@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "ESNext",
     "outDir": "lib",
     "strict": true,
     "allowJs": true,

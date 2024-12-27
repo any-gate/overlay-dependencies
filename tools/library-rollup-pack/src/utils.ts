@@ -6,12 +6,10 @@ import {
   BUNDLE_DIR,
   OUTPUT_CSS_FILE_NAME,
   SOURCE_DIR,
-  BUNDLE_MANIFEST_NAME,
 } from './constants.js';
 
 import path from 'path';
 import { spawn } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
 
 export interface ManifestModel {
   name: string;
@@ -24,7 +22,7 @@ export interface ManifestBundleModel extends ManifestModel {
   hasCss: boolean;
 }
 
-export const readDirYml = filePath => {
+const readDirYml = filePath => {
   const content = fs.readFileSync(filePath, {
     encoding: 'utf8',
   });
@@ -54,7 +52,7 @@ export function getLibrarySelection() {
       {
         name,
         value: name,
-        disabled: true,
+        disabled: true
       },
       ...getDirectories(path.join(dir, name))
         .filter(version => isLibrary(path.join(dir, name, version)))
@@ -103,7 +101,7 @@ export const getOutputFolder = (name: string, version) => {
   return path.resolve(BUNDLE_DIR, name, version);
 };
 
-const getBundleManifest = ({
+export const getBundleManifest = ({
   name,
   version,
   schema_version,
@@ -118,17 +116,6 @@ const getBundleManifest = ({
     ),
     dependences,
   };
-};
-
-export const writeBundleManifest = (manifest: ManifestModel) => {
-  writeFileSync(
-    path.resolve(
-      getOutputFolder(manifest.name, manifest.version),
-      BUNDLE_MANIFEST_NAME
-    ),
-    JSON.stringify(getBundleManifest(manifest), null, 2),
-    { encoding: 'utf8' }
-  );
 };
 
 export const getExternals = ({
@@ -146,7 +133,7 @@ export const getExternals = ({
 
 export async function updateDependencies(libraries: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn('pnpm', [...libraries, '-P'], {
+    const child = spawn('pnpm', [...libraries], {
       stdio: 'inherit',
       cwd: path.resolve(),
       env: {
