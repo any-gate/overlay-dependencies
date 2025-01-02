@@ -6,6 +6,11 @@ import inquirer from 'inquirer';
 import { build } from './pack.js';
 import kleur from 'kleur';
 
+process.on('SIGINT', () => {
+  console.log('\nProgram interrupted by Command + C (SIGINT).');
+  process.exit(130);
+});
+
 program
   .command('build')
   .description('Build library for systemjs.')
@@ -14,23 +19,29 @@ program
     const choices = getLibrarySelection();
     let libraries: string[] = [];
 
-    try {
-      const res = await inquirer.prompt({
+    const res = await inquirer
+      .prompt({
         type: 'checkbox',
         message: 'Select library need pack',
         name: 'libraries',
         choices,
+      })
+      .catch(error => {
+        if (error.isTtyError) {
+          console.error(
+            'Prompt could not be rendered in the current environment.'
+          );
+          process.exit(1);
+        } else if (error.name === 'ExitPromptError') {
+          console.log('\nProgram interrupted by Command + C (SIGINT).');
+          process.exit(128 + 2);
+        } else {
+          console.error('Unexpected error:', error);
+          process.exit(1);
+        }
       });
-      libraries = res.libraries;
-    } catch (error: any) {
-      if (error.name === 'ExitPromptError') {
-        console.log('\nPrompt closed by user.');
-        process.exit(0);
-      } else {
-        console.error('Unexpected error:', error);
-        process.exit(1);
-      }
-    }
+
+    libraries = res.libraries;
 
     if (libraries.length === 0) {
       kleur.yellow('Please select library!');
