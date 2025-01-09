@@ -8,7 +8,7 @@ import kleur from 'kleur';
 
 process.on('SIGINT', () => {
   console.log('\nProgram interrupted by Command + C (SIGINT).');
-  process.exit(130);
+  process.exit(128 + 2);
 });
 
 program

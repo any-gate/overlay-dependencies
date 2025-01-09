@@ -6,7 +6,7 @@
     "preinstall": "npx only-allow pnpm",
     "build:pack": "pack build",
     "build:rollup": "rollup-pack build",
-    "serve": "http-server ./dist -p 8080"
+    "serve": "http-server ./dist -p 8088"
   },
   "keywords": [],
   "author": "",
