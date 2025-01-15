@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { program } from 'commander';
-import { getAllLibrary, getLibrarySelection } from './utils.js';
+import { getLibrarySelection } from './utils.js';
 
 import inquirer from 'inquirer';
 import { build } from './pack.js';
@@ -25,6 +25,7 @@ program
         message: 'Select library need pack',
         name: 'libraries',
         choices,
+        pageSize: 20,
       })
       .catch(error => {
         if (error.isTtyError) {

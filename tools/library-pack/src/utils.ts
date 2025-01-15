@@ -13,6 +13,8 @@ import path from 'path';
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 
+import kleur from 'kleur';
+
 export interface ManifestModel {
   name: string;
   version: string;
@@ -48,18 +50,15 @@ function getDirectories(dir: string) {
 export function getLibrarySelection() {
   const dir = path.resolve(SOURCE_DIR);
   const selection: { name: string; value: string; disabled?: boolean }[] = [];
+  let color: 'blue' | 'green' = 'green';
 
   getDirectories(dir).forEach(name => {
+    color = color === 'blue' ? 'green' : 'blue';
     selection.push(
-      {
-        name,
-        value: name,
-        disabled: true,
-      },
       ...getDirectories(path.join(dir, name))
         .filter(version => isLibrary(path.join(dir, name, version)))
         .map(version => ({
-          name: version,
+          name: `${kleur[color](name)} ${version}`,
           value: path.join(dir, name, version),
         }))
     );
