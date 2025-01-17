@@ -1,5 +1,5 @@
 name: 'react-dom'
 version: 16.14.0
-schema_version: 1.0.0
+schema: 1.0.0
 dependences:
   'react': 16.14.0

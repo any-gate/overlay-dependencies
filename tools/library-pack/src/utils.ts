@@ -18,12 +18,12 @@ import kleur from 'kleur';
 export interface ManifestModel {
   name: string;
   version: string;
-  schema_version: string;
+  schema: string;
   dependences?: Record<string, string>;
 }
 
 export interface ManifestBundleModel extends ManifestModel {
-  hasCss: boolean;
+  css: boolean;
 }
 
 export const readDirYml = filePath => {
@@ -105,14 +105,14 @@ export const getOutputFolder = (name: string, version) => {
 const getBundleManifest = ({
   name,
   version,
-  schema_version,
+  schema,
   dependences,
 }: ManifestModel): ManifestBundleModel => {
   return {
     name,
     version,
-    schema_version,
-    hasCss: fs.existsSync(
+    schema,
+    css: fs.existsSync(
       path.resolve(getOutputFolder(name, version), OUTPUT_CSS_FILE_NAME)
     ),
     dependences,
