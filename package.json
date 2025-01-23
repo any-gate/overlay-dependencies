@@ -7,7 +7,8 @@
     "dev:tools": "pm2 start tools.ecosystem.config.js",
     "build:tools": "pnpm --filter './tools/**' build",
     "build:deps": "pnpm --filter './dependencies' build:pack",
-    "serve": "pnpm --filter './dependencies' serve"
+    "serve": "pnpm --filter './dependencies' serve",
+    "add:dep": "bun ./scripts/add.js"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,9 @@
   "packageManager": "pnpm@9.3.0",
   "engines": {
     "pnpm": ">=9.3.0"
+  },
+  "devDependencies": {
+    "commander": "^13.1.0",
+    "inquirer": "^12.2.0"
   }
 }
