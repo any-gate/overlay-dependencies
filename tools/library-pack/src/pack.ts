@@ -1,5 +1,4 @@
-import fs, { writeFileSync } from 'fs';
-import path, { resolve } from 'path';
+import { resolve } from 'path';
 
 import webpack from 'webpack';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
@@ -7,10 +6,8 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import {
   MANIFEST_FILE_NAME,
   ENTRY_FILE_NAME,
-  BUNDLE_DIR,
   OUTPUT_FILE_NAME,
   OUTPUT_CSS_FILE_NAME,
-  BUNDLE_MANIFEST_NAME,
 } from './constants.js';
 import {
   getAllLibrary,
