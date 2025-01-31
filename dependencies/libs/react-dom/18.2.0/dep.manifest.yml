@@ -2,5 +2,5 @@ name: 'react-dom'
 version: 18.2.0
 schema: 1.0.0
 # 但对于构建目标库所包含的外部依赖, 需要额外进行构建
-dependences:
+dependencies:
   'react': 18.2.0

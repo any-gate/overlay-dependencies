@@ -27,7 +27,7 @@ const getInputOptions = (
   folder: string,
   manifest: ManifestModel
 ): InputOptions => {
-  const external = Object.keys(manifest.dependences || {});
+  const external = Object.keys(manifest.dependencies || {});
   const res = {
     cache: false,
     input: path.join(folder, ENTRY_FILE_NAME),
@@ -101,8 +101,8 @@ async function execTasks(
   const libraries = [{ name: manifest.name, version: manifest.version }];
 
   // 判断是否存在子依赖
-  if (manifest.dependences) {
-    Object.entries(manifest.dependences).forEach(([libName, version]) => {
+  if (manifest.dependencies) {
+    Object.entries(manifest.dependencies).forEach(([libName, version]) => {
       return libraries.push({ name: libName, version });
     });
   }

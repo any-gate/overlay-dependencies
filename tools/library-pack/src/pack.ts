@@ -178,8 +178,8 @@ async function execTasks(
   const { manifest } = task;
   const libraries = [{ name: manifest.name, version: manifest.version }];
 
-  if (manifest.dependences) {
-    Object.entries(manifest.dependences).forEach(([name, version]) => {
+  if (manifest.dependencies) {
+    Object.entries(manifest.dependencies).forEach(([name, version]) => {
       libraries.push({ name, version });
     });
   }
