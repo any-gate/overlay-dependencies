@@ -23,7 +23,11 @@ async function main() {
   name = name.trim();
   version = version.trim();
 
-  const dest = path.resolve(SOURCE_DIR, name, version);
+  const dest = path.resolve(
+    SOURCE_DIR,
+    name.replace(/@/g, '').replace(/\//g, '-'),
+    version
+  );
 
   fs.mkdirSync(dest, { recursive: true });
 
