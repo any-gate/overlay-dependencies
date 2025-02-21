@@ -107,6 +107,13 @@ export const formatWebpackConfig = ({
           },
         },
         {
+          test: /\.less$/i,
+          use: [
+            require.resolve('css-loader'),
+            require.resolve('less-loader'),
+          ],
+        },
+        {
           test: /\.(css)$/,
           // sideEffects: true,
           use: [

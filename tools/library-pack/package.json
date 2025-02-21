@@ -31,6 +31,8 @@
     "css-minimizer-webpack-plugin": "^6.0.0",
     "inquirer": "^12.2.0",
     "kleur": "^4.1.5",
+    "less": "^4.2.2",
+    "less-loader": "^12.2.0",
     "mini-css-extract-plugin": "^2.8.1",
     "postcss-loader": "^8.1.1",
     "postcss-preset-env": "^9.5.0",
