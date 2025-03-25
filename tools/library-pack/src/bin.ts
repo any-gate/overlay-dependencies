@@ -50,7 +50,8 @@ program
     }
 
     try {
-      build({ folders: libraries });
+      await build({ folders: libraries });
+      process.exit(0);
     } catch (error) {
       console.log(
         kleur.red(

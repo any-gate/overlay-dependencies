@@ -1,4 +1,6 @@
 import { resolve } from 'path';
+import fs from 'fs';
+import { spawn } from 'child_process';
 
 import webpack from 'webpack';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
@@ -133,17 +135,59 @@ export const formatWebpackConfig = ({
   };
 };
 
+async function runPostBuildScript(
+  folder: string,
+  manifest: ManifestModel
+): Promise<void> {
+  const postBuildScript = resolve(folder, 'postbuild.js');
+  if (!fs.existsSync(postBuildScript)) {
+    return;
+  }
+
+  const outputPath = getOutputFolder(manifest.name, manifest.version);
+
+  return new Promise((resolve, _reject) => {
+    const child = spawn('node', [postBuildScript], {
+      stdio: 'inherit',
+      cwd: folder,
+      env: {
+        ...process.env,
+        MANIFEST: JSON.stringify(manifest),
+        OUTPUT_PATH: outputPath,
+      },
+    });
+
+    child.on('error', err => {
+      console.warn(
+        kleur.yellow(
+          `[Warning] Failed to execute postbuild script: ${err.message}`
+        )
+      );
+      resolve();
+    });
+
+    child.on('exit', code => {
+      if (code !== 0) {
+        console.warn(
+          kleur.yellow(`[Warning] Postbuild script exited with code ${code}`)
+        );
+      }
+      resolve();
+    });
+  });
+}
+
 async function execTask(task: {
   folder: string;
   manifest: ManifestModel;
 }): Promise<string> {
   return new Promise((resolve, reject) => {
-    const { manifest } = task;
+    const { manifest, folder } = task;
     const webpackConfig = formatWebpackConfig(task);
 
     const compiler = webpack(webpackConfig);
 
-    compiler.run((error: any, stats: any) => {
+    compiler.run(async (error: any, stats: any) => {
       if (error) {
         reject(new Error(error.message));
         return;
@@ -153,11 +197,11 @@ async function execTask(task: {
         reject(info.errors);
         return;
       }
-      // if (stats.hasWarnings()) {
-      //   console.warn(info.warnings);
-      // }
-      // 导出 dep.manifest.yml 文件
+
       writeBundleManifest(manifest);
+
+      // 执行回调脚本
+      await runPostBuildScript(folder, manifest);
 
       compiler.close(closeErr => {
         if (closeErr) {
