@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import path from 'path';
 import fs from 'fs';
 import { spawn } from 'child_process';
 
@@ -26,7 +26,7 @@ import CompressionPlugin from 'compression-webpack-plugin';
 import WebpackBar from 'webpackbar';
 
 export const readLibMinifest = (folder: string) => {
-  return readDirYml(resolve(folder, MANIFEST_FILE_NAME));
+  return readDirYml(path.resolve(folder, MANIFEST_FILE_NAME));
 };
 
 export const formatWebpackConfig = ({
@@ -58,7 +58,7 @@ export const formatWebpackConfig = ({
     },
     mode: 'production' as 'production',
     devtool: 'source-map',
-    entry: resolve(folder, ENTRY_FILE_NAME),
+    entry: path.resolve(folder, ENTRY_FILE_NAME),
     output: {
       filename: OUTPUT_FILE_NAME,
       path: getOutputFolder(manifest.name, manifest.version),
@@ -139,14 +139,13 @@ async function runPostBuildScript(
   folder: string,
   manifest: ManifestModel
 ): Promise<void> {
-  const postBuildScript = resolve(folder, 'postbuild.js');
-  if (!fs.existsSync(postBuildScript)) {
-    return;
-  }
-
-  const outputPath = getOutputFolder(manifest.name, manifest.version);
-
   return new Promise((resolve, _reject) => {
+    const postBuildScript = path.resolve(folder, 'postbuild.js');
+    if (!fs.existsSync(postBuildScript)) {
+      resolve();
+      return;
+    }
+    const outputPath = getOutputFolder(manifest.name, manifest.version);
     const child = spawn('node', [postBuildScript], {
       stdio: 'inherit',
       cwd: folder,
@@ -200,13 +199,13 @@ async function execTask(task: {
 
       writeBundleManifest(manifest);
 
-      // 执行回调脚本
-      await runPostBuildScript(folder, manifest);
-
-      compiler.close(closeErr => {
+      compiler.close(async closeErr => {
         if (closeErr) {
           reject(closeErr);
         } else {
+          // 执行回调脚本
+          await runPostBuildScript(folder, manifest);
+
           resolve('complete');
         }
       });
@@ -249,7 +248,7 @@ async function execTasks(
 
   await updateDependencies(['remove', ...libraries.map(({ name }) => name)]);
 
-  execTasks(tasks);
+  await execTasks(tasks);
 }
 
 export async function build({ folders }: { folders: string[] }) {
