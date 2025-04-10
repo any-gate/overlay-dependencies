@@ -35,7 +35,7 @@ export const formatWebpackConfig = ({
 }: {
   folder: string;
   manifest: ManifestModel;
-}) => {
+}): webpack.Configuration => {
   const plugins = [
     new MiniCssExtractPlugin({
       filename: OUTPUT_CSS_FILE_NAME,
@@ -46,6 +46,10 @@ export const formatWebpackConfig = ({
     }),
     new CompressionPlugin({
       threshold: 12800, // 对大于 128kb 的文件进行压缩
+    }),
+    // 添加以下插件，强制所有模块打包到主文件
+    new webpack.optimize.LimitChunkCountPlugin({
+      maxChunks: 1,
     }),
   ];
   return {
@@ -67,7 +71,12 @@ export const formatWebpackConfig = ({
     },
     optimization: {
       minimize: true,
+      // splitChunks: false,
+      // runtimeChunk: false,
     },
+    // experiments: {
+    //   outputModule: false,
+    // },
     plugins,
     performance: {
       maxEntrypointSize: 2000000,
